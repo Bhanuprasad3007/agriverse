@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - Agriverse{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white py-3">
+                    <h2 class="h4 mb-0">Profile Settings</h2>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('auth.update_profile') }}" class="needs-validation" novalidate>
+                        <!-- Basic Information -->
+                        <h5 class="mb-4">Basic Information</h5>
+                        <div class="mb-4">
+                            <label for="name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ current_user.name }}" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" value="{{ current_user.email }}" disabled>
+                            <small class="text-muted">Email cannot be changed</small>
+                        </div>
+                        
+                        <!-- Role-specific Information -->
+                        {% if current_user.role == 'farmer' %}
+                        <h5 class="mb-4 mt-5">Farm Information</h5>
+                        <div class="mb-4">
+                            <label for="farm_name" class="form-label">Farm Name</label>
+                            <input type="text" class="form-control" id="farm_name" name="farm_name" value="{{ current_user.farm_name }}">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="farm_location" class="form-label">Farm Location</label>
+                            <input type="text" class="form-control" id="farm_location" name="farm_location" value="{{ current_user.farm_location }}">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="farm_size" class="form-label">Farm Size (acres)</label>
+                            <input type="number" class="form-control" id="farm_size" name="farm_size" value="{{ current_user.farm_size or 0 }}" step="0.01">
+                        </div>
+                        {% endif %}
+                        
+                        {% if current_user.role == 'investor' %}
+                        <h5 class="mb-4 mt-5">Investment Information</h5>
+                        <div class="mb-4">
+                            <label for="company_name" class="form-label">Company Name</label>
+                            <input type="text" class="form-control" id="company_name" name="company_name" value="{{ current_user.company_name }}">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="investment_capacity" class="form-label">Investment Capacity ($)</label>
+                            <input type="number" class="form-control" id="investment_capacity" name="investment_capacity" value="{{ current_user.investment_capacity or 0 }}" step="0.01">
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Change Password -->
+                        <h5 class="mb-4 mt-5">Change Password</h5>
+                        <div class="mb-4">
+                            <label for="current_password" class="form-label">Current Password</label>
+                            <input type="password" class="form-control" id="current_password" name="current_password">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="new_password" class="form-label">New Password</label>
+                            <input type="password" class="form-control" id="new_password" name="new_password">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="confirm_password" class="form-label">Confirm New Password</label>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password">
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Account Status -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h5 class="mb-1">Account Status</h5>
+                            <p class="mb-0 text-muted">
+                                Status: 
+                                <span class="badge bg-{{ 'success' if current_user.is_active else 'danger' }}">
+                                    {{ 'Active' if current_user.is_active else 'Inactive' }}
+                                </span>
+                            </p>
+                            <p class="mb-0 text-muted">
+                                Verification: 
+                                <span class="badge bg-{{ 'success' if current_user.is_verified else 'warning' }}">
+                                    {{ 'Verified' if current_user.is_verified else 'Pending Verification' }}
+                                </span>
+                            </p>
+                        </div>
+                        <div>
+                            <i class="fas fa-shield-alt fa-3x text-{{ 'success' if current_user.is_active and current_user.is_verified else 'warning' }}"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.form-control:focus {
+    box-shadow: none;
+    border-color: #0d6efd;
+}
+
+.card {
+    border-radius: 15px;
+}
+
+.card-header {
+    border-radius: 15px 15px 0 0 !important;
+}
+</style>
+
+{% block scripts %}
+<script>
+// Form validation
+document.querySelector('form').addEventListener('submit', function(event) {
+    const newPassword = document.getElementById('new_password');
+    const confirmPassword = document.getElementById('confirm_password');
+    
+    if (newPassword.value || confirmPassword.value) {
+        if (newPassword.value !== confirmPassword.value) {
+            event.preventDefault();
+            alert('New passwords do not match!');
+            return;
+        }
+        
+        if (!document.getElementById('current_password').value) {
+            event.preventDefault();
+            alert('Please enter your current password to change it.');
+            return;
+        }
+    }
+});
+</script>
+{% endblock %}
+{% endblock %} 

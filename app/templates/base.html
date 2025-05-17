@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %} - Agriverse</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            {% if current_user.is_authenticated %}
+            <!-- Sidebar -->
+            <div class="col-md-2 sidebar">
+                <div class="d-flex flex-column">
+                    <div class="text-center mb-4">
+                        <h5 class="mb-2">Agriverse</h5>
+                        <p class="text-muted mb-3">{{ current_user.role|title }}</p>
+                        <button id="theme-toggle" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-moon me-2"></i>Toggle Theme
+                        </button>
+                    </div>
+                    
+                    {% if current_user.role == 'admin' %}
+                    <a href="{{ url_for('admin.dashboard') }}" class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+                        <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                    </a>
+                    <a href="{{ url_for('admin.users') }}" class="nav-link {% if request.endpoint == 'admin.users' %}active{% endif %}">
+                        <i class="fas fa-users me-2"></i> Users
+                    </a>
+                    <a href="{{ url_for('admin.transactions') }}" class="nav-link {% if request.endpoint == 'admin.transactions' %}active{% endif %}">
+                        <i class="fas fa-exchange-alt me-2"></i> Transactions
+                    </a>
+                    <a href="{{ url_for('admin.soil_reports') }}" class="nav-link {% if request.endpoint == 'admin.soil_reports' %}active{% endif %}">
+                        <i class="fas fa-file-alt me-2"></i> Soil Reports
+                    </a>
+                    <a href="{{ url_for('admin.schemes') }}" class="nav-link {% if request.endpoint == 'admin.schemes' %}active{% endif %}">
+                        <i class="fas fa-scroll me-2"></i> Schemes
+                    </a>
+                    {% endif %}
+                    
+                    {% if current_user.role == 'farmer' %}
+                    <a href="{{ url_for('farmer.dashboard') }}" class="nav-link {% if request.endpoint == 'farmer.dashboard' %}active{% endif %}">
+                        <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                    </a>
+                    <a href="{{ url_for('farmer.products') }}" class="nav-link {% if request.endpoint == 'farmer.products' %}active{% endif %}">
+                        <i class="fas fa-box me-2"></i> Products
+                    </a>
+                    <a href="{{ url_for('farmer.investments') }}" class="nav-link {% if request.endpoint == 'farmer.investments' %}active{% endif %}">
+                        <i class="fas fa-chart-pie me-2"></i> Investments
+                    </a>
+                    <a href="{{ url_for('farmer.soil_reports') }}" class="nav-link {% if request.endpoint == 'farmer.soil_reports' %}active{% endif %}">
+                        <i class="fas fa-file-alt me-2"></i> Soil Reports
+                    </a>
+                    <a href="{{ url_for('farmer.schemes') }}" class="nav-link {% if request.endpoint == 'farmer.schemes' %}active{% endif %}">
+                        <i class="fas fa-scroll me-2"></i> Schemes
+                    </a>
+                    {% endif %}
+                    
+                    {% if current_user.role == 'investor' %}
+                    <a href="{{ url_for('investor.dashboard') }}" class="nav-link {% if request.endpoint == 'investor.dashboard' %}active{% endif %}">
+                        <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                    </a>
+                    <a href="{{ url_for('investor.investments') }}" class="nav-link {% if request.endpoint == 'investor.investments' %}active{% endif %}">
+                        <i class="fas fa-hand-holding-usd me-2"></i> Investments
+                    </a>
+                    <a href="{{ url_for('investor.farmers') }}" class="nav-link {% if request.endpoint == 'investor.farmers' %}active{% endif %}">
+                        <i class="fas fa-users me-2"></i> Farmers
+                    </a>
+                    {% endif %}
+                    
+                    {# Remove marketplace link for farmers #}
+                    {% if current_user.role != 'farmer' %}
+                    <a href="{{ url_for('main.marketplace') }}" class="nav-link {% if request.endpoint == 'main.marketplace' %}active{% endif %}">
+                        <i class="fas fa-store me-2"></i> Marketplace
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Main Content -->
+            <div class="col-md-{% if current_user.is_authenticated %}10{% else %}12{% endif %}">
+                <!-- Navbar -->
+                <nav class="navbar navbar-expand-lg mb-3">
+                    <div class="container-fluid px-3">
+                        {% if not current_user.is_authenticated %}
+                        <a class="navbar-brand" href="{{ url_for('main.index') }}">
+                            <i class="fas fa-leaf me-2"></i>Agriverse
+                        </a>
+                        {% endif %}
+                        
+                        <div class="ms-auto d-flex align-items-center gap-2">
+                            {% if current_user.is_authenticated %}
+                            <div class="dropdown">
+                                <button class="btn btn-outline-primary dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
+                                    <i class="fas fa-user me-1"></i>{{ current_user.name }}
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}">Profile</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
+                                </ul>
+                            </div>
+                            {% else %}
+                            <div class="d-flex gap-2">
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-primary dropdown-toggle" type="button" id="loginDropdown" data-bs-toggle="dropdown">
+                                        <i class="fas fa-sign-in-alt me-1"></i>Login
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="{{ url_for('auth.login', role='farmer') }}">
+                                            <i class="fas fa-tractor me-2"></i>Farmer
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="{{ url_for('auth.login', role='investor') }}">
+                                            <i class="fas fa-chart-line me-2"></i>Investor
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="{{ url_for('auth.login', role='admin') }}">
+                                            <i class="fas fa-user-shield me-2"></i>Admin
+                                        </a></li>
+                                    </ul>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-primary dropdown-toggle" type="button" id="registerDropdown" data-bs-toggle="dropdown">
+                                        <i class="fas fa-user-plus me-1"></i>Register
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="{{ url_for('auth.signup', role='farmer') }}">
+                                            <i class="fas fa-tractor me-2"></i>Farmer
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="{{ url_for('auth.signup', role='investor') }}">
+                                            <i class="fas fa-chart-line me-2"></i>Investor
+                                        </a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </nav>
+                
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show fade-in" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                <!-- Main Content -->
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Theme Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-bs-theme', savedTheme);
+            updateThemeIcon(savedTheme);
+
+            const themeToggles = document.querySelectorAll('#theme-toggle');
+            themeToggles.forEach(toggle => {
+                toggle.addEventListener('click', () => {
+                    const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    
+                    document.documentElement.setAttribute('data-bs-theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                    updateThemeIcon(newTheme);
+                });
+            });
+
+            function updateThemeIcon(theme) {
+                const icons = document.querySelectorAll('#theme-toggle i');
+                icons.forEach(icon => {
+                    icon.className = theme === 'dark' ? 'fas fa-sun me-2' : 'fas fa-moon me-2';
+                });
+            }
+        });
+    </script>
+    
+    {% block scripts %}{% endblock %}
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 

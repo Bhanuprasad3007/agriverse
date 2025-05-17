@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}Investor Sign Up - Agriverse{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <h2 class="h4 mb-0">Sign Up as Investor</h2>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" class="needs-validation" novalidate onsubmit="return validateForm('investorSignupForm')" id="investorSignupForm">
+                        <!-- Basic Information -->
+                        <h5 class="mb-4">Basic Information</h5>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                            <div class="invalid-feedback">Please enter your full name.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                            <div class="invalid-feedback">Please enter a valid email address.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required minlength="8">
+                            <div class="invalid-feedback">Password must be at least 8 characters long.</div>
+                        </div>
+                        <div class="mb-4">
+                            <label for="confirm_password" class="form-label">Confirm Password</label>
+                            <input type="password" class="form-control" id="confirm_password" required>
+                            <div class="invalid-feedback">Passwords do not match.</div>
+                        </div>
+
+                        <!-- Investment Information -->
+                        <h5 class="mb-4">Investment Information</h5>
+                        <div class="mb-3">
+                            <label for="company_name" class="form-label">Company Name (Optional)</label>
+                            <input type="text" class="form-control" id="company_name" name="company_name">
+                        </div>
+                        <div class="mb-4">
+                            <label for="investment_capacity" class="form-label">Investment Capacity (USD)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="investment_capacity" name="investment_capacity" required min="0" step="1000">
+                            </div>
+                            <div class="invalid-feedback">Please enter your investment capacity.</div>
+                            <small class="text-muted">This helps us show you relevant investment opportunities.</small>
+                        </div>
+
+                        <!-- Investment Preferences -->
+                        <h5 class="mb-4">Investment Preferences</h5>
+                        <div class="mb-3">
+                            <label class="form-label">Interested Investment Areas</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="crops" name="investment_areas" value="crops">
+                                <label class="form-check-label" for="crops">Crops & Agriculture</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="livestock" name="investment_areas" value="livestock">
+                                <label class="form-check-label" for="livestock">Livestock & Dairy</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="organic" name="investment_areas" value="organic">
+                                <label class="form-check-label" for="organic">Organic Farming</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="tech" name="investment_areas" value="tech">
+                                <label class="form-check-label" for="tech">Agri-tech & Innovation</label>
+                            </div>
+                        </div>
+
+                        <!-- Terms and Conditions -->
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="terms" required>
+                                <label class="form-check-label" for="terms">
+                                    I agree to the <a href="{{ url_for('main.terms') }}" target="_blank">Terms and Conditions</a>
+                                </label>
+                                <div class="invalid-feedback">You must agree to the terms and conditions.</div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">Create Account</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer bg-light text-center py-3">
+                    Already have an account? <a href="{{ url_for('auth.login', role='investor') }}">Login here</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('investorSignupForm').addEventListener('submit', function(event) {
+    if (!this.checkValidity()) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    
+    // Check if passwords match
+    const password = document.getElementById('password');
+    const confirmPassword = document.getElementById('confirm_password');
+    
+    if (password.value !== confirmPassword.value) {
+        confirmPassword.setCustomValidity("Passwords do not match");
+        event.preventDefault();
+    } else {
+        confirmPassword.setCustomValidity("");
+    }
+    
+    // Check if at least one investment area is selected
+    const investmentAreas = document.querySelectorAll('input[name="investment_areas"]:checked');
+    if (investmentAreas.length === 0) {
+        event.preventDefault();
+        alert('Please select at least one investment area.');
+        return false;
+    }
+    
+    this.classList.add('was-validated');
+});
+
+// Real-time password match validation
+document.getElementById('confirm_password').addEventListener('input', function() {
+    const password = document.getElementById('password').value;
+    if (this.value !== password) {
+        this.setCustomValidity("Passwords do not match");
+    } else {
+        this.setCustomValidity("");
+    }
+});
+
+// Format investment capacity input
+document.getElementById('investment_capacity').addEventListener('input', function() {
+    this.value = this.value.replace(/[^0-9]/g, '');
+});
+</script>
+{% endblock %} 

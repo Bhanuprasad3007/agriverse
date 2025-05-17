@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Browse Farmers - Agriverse{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h1 class="h3 mb-2">Browse Farmers</h1>
+                    <p class="text-muted mb-0">Discover and invest in verified farmers</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Farmers Grid -->
+    <div class="row g-4">
+        {% for farmer in farmers %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="avatar bg-primary bg-opacity-10 rounded-circle p-3 me-3">
+                            <i class="fas fa-user text-primary fa-2x"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">{{ farmer.name }}</h5>
+                            <p class="text-muted small mb-0">
+                                <i class="fas fa-map-marker-alt me-1"></i>
+                                {{ farmer.location or 'Location not specified' }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <p class="text-muted mb-2">{{ farmer.bio or 'No bio provided' }}</p>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <div class="bg-light rounded p-2">
+                                <p class="small text-muted mb-0">Active Products</p>
+                                <h6 class="mb-0">{{ farmer.products|length }}</h6>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="bg-light rounded p-2">
+                                <p class="small text-muted mb-0">Total Investments</p>
+                                <h6 class="mb-0">{{ farmer.investments_received|length }}</h6>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="mb-2">Farming Areas</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for area in farmer.farming_areas %}
+                            <span class="badge bg-primary bg-opacity-10 text-primary">{{ area }}</span>
+                            {% else %}
+                            <span class="badge bg-light text-muted">No areas specified</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <hr class="my-3">
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="small text-muted mb-0">Member since</p>
+                            <p class="mb-0">{{ farmer.created_at.strftime('%b %Y') }}</p>
+                        </div>
+                        <a href="{{ url_for('investor.farmer_profile', farmer_id=farmer.id) }}" 
+                           class="btn btn-primary">
+                            View Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-users text-muted fa-3x mb-3"></i>
+                    <h5>No Farmers Found</h5>
+                    <p class="text-muted">There are no verified farmers available at the moment.</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 

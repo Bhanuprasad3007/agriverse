@@ -1,0 +1,332 @@
+{% extends "base.html" %}
+
+{% block title %}Select Payment Method - Agriverse{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h1 class="h3 mb-2">Select Payment Method</h1>
+                    <p class="text-muted mb-0">Choose how you want to pay</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Order Summary -->
+        <div class="col-lg-8 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">Order Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-4">
+                        {% if product.image_url %}
+                        <img src="{{ product.image_url }}" alt="{{ product.name }}" class="rounded" style="width: 100px; height: 100px; object-fit: cover;">
+                        {% else %}
+                        <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
+                            <i class="fas fa-seedling fa-2x text-muted"></i>
+                        </div>
+                        {% endif %}
+                        <div class="ms-3">
+                            <h5 class="mb-1">{{ product.name }}</h5>
+                            <p class="text-muted mb-1">Seller: {{ product.seller.name }}</p>
+                            <p class="mb-0">
+                                <span class="text-primary">${{ "%.2f"|format(product.price) }}</span> per {{ product.unit }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-light border mb-4">
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <p class="mb-1"><strong>Quantity:</strong></p>
+                                <p class="text-muted">{{ quantity }} {{ product.unit }}</p>
+                            </div>
+                            <div class="col-sm-6">
+                                <p class="mb-1"><strong>Total Amount:</strong></p>
+                                <p class="text-primary fw-bold">${{ "%.2f"|format(total_amount) }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Methods -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">Payment Method</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('main.checkout', product_id=product.id) }}" method="POST">
+                        <input type="hidden" name="quantity" value="{{ quantity }}">
+                        <input type="hidden" name="total_amount" value="{{ total_amount }}">
+
+                        <!-- UPI Payment -->
+                        <div class="payment-option mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method" id="upi" value="upi" checked>
+                                <label class="form-check-label d-flex align-items-center" for="upi">
+                                    <i class="fas fa-mobile-alt fa-lg text-primary me-3"></i>
+                                    <div>
+                                        <h6 class="mb-0">UPI Payment</h6>
+                                        <small class="text-muted">Pay using UPI ID</small>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Card Payment -->
+                        <div class="payment-option mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method" id="card" value="card">
+                                <label class="form-check-label d-flex align-items-center" for="card">
+                                    <i class="fas fa-credit-card fa-lg text-primary me-3"></i>
+                                    <div>
+                                        <h6 class="mb-0">Credit/Debit Card</h6>
+                                        <small class="text-muted">Pay using card</small>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Cash Payment -->
+                        <div class="payment-option mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method" id="cash" value="cash">
+                                <label class="form-check-label d-flex align-items-center" for="cash">
+                                    <i class="fas fa-money-bill-wave fa-lg text-primary me-3"></i>
+                                    <div>
+                                        <h6 class="mb-0">Cash on Delivery</h6>
+                                        <small class="text-muted">Pay when you receive</small>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Wallet Payment -->
+                        <div class="payment-option mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method" id="wallet" value="wallet">
+                                <label class="form-check-label d-flex align-items-center" for="wallet">
+                                    <i class="fas fa-wallet fa-lg text-primary me-3"></i>
+                                    <div>
+                                        <h6 class="mb-0">Wallet Balance</h6>
+                                        <small class="text-muted">Available: ${{ "%.2f"|format(current_user.wallet_balance or 0.00) }}</small>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>Subtotal</span>
+                            <span>${{ "%.2f"|format(total_amount) }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>Processing Fee (2%)</span>
+                            <span>${{ "%.2f"|format(total_amount * 0.02) }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-4">
+                            <strong>Total</strong>
+                            <strong>${{ "%.2f"|format(total_amount * 1.02) }}</strong>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-lock me-2"></i>Proceed to Checkout
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.payment-option {
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    transition: all 0.3s ease;
+}
+
+.payment-option:hover {
+    border-color: #6c757d;
+    background-color: #f8f9fa;
+}
+
+.payment-option .form-check-input:checked ~ .form-check-label {
+    color: #0d6efd;
+}
+
+.payment-option .form-check-input:checked ~ .form-check-label small {
+    color: #6c757d !important;
+}
+
+.payment-option .form-check-label {
+    cursor: pointer;
+    width: 100%;
+    margin: 0;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const checkoutButton = form.querySelector('button[type="submit"]');
+    const paymentMethods = form.querySelectorAll('input[name="payment_method"]');
+    const walletBalance = parseFloat('{{ current_user.wallet_balance or 0.00 }}');
+    const totalAmount = parseFloat('{{ total_amount * 1.02 }}'); // Including processing fee
+
+    // Function to validate UPI ID
+    function validateUpiId(upiId) {
+        const upiPattern = /^[a-zA-Z0-9\.-]{2,256}@[a-zA-Z][a-zA-Z]{2,64}$/;
+        return upiPattern.test(upiId);
+    }
+
+    // Function to show payment details based on selected method
+    function showPaymentDetails(method) {
+        // Remove any existing payment details
+        const existingDetails = form.querySelector('.payment-details');
+        if (existingDetails) {
+            existingDetails.remove();
+        }
+
+        let detailsHtml = '';
+        
+        if (method === 'upi') {
+            detailsHtml = `
+                <div class="payment-details mt-4">
+                    <div class="mb-3">
+                        <label class="form-label">UPI ID</label>
+                        <div class="input-group">
+                            <input type="text" 
+                                   class="form-control" 
+                                   name="upi_id" 
+                                   placeholder="username@bank"
+                                   pattern="[a-zA-Z0-9\.-]{2,256}@[a-zA-Z][a-zA-Z]{2,64}"
+                                   required>
+                            <button class="btn btn-outline-secondary" type="button" id="verify-upi">
+                                <i class="fas fa-check-circle"></i> Verify
+                            </button>
+                        </div>
+                        <div class="form-text">Enter your UPI ID (e.g., username@upi)</div>
+                    </div>
+                </div>`;
+        } else if (method === 'card') {
+            detailsHtml = `
+                <div class="payment-details mt-4">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        You will be redirected to our secure payment gateway to complete the card payment.
+                    </div>
+                </div>`;
+        } else if (method === 'cash') {
+            detailsHtml = `
+                <div class="payment-details mt-4">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Payment will be collected at the time of delivery.
+                    </div>
+                </div>`;
+        } else if (method === 'wallet') {
+            const isBalanceSufficient = walletBalance >= totalAmount;
+            detailsHtml = `
+                <div class="payment-details mt-4">
+                    <div class="alert ${isBalanceSufficient ? 'alert-success' : 'alert-danger'}">
+                        <i class="fas fa-${isBalanceSufficient ? 'check' : 'exclamation'}-circle me-2"></i>
+                        ${isBalanceSufficient ? 
+                            'Sufficient balance available for this purchase.' : 
+                            'Insufficient wallet balance. Please add funds or choose a different payment method.'}
+                    </div>
+                </div>`;
+            
+            // Disable checkout button if balance is insufficient
+            checkoutButton.disabled = !isBalanceSufficient;
+        }
+
+        // Insert the payment details
+        if (detailsHtml) {
+            form.querySelector('.payment-option.mb-4').insertAdjacentHTML('afterend', detailsHtml);
+            
+            // Add UPI verification handler if UPI method
+            if (method === 'upi') {
+                const verifyButton = document.getElementById('verify-upi');
+                const upiInput = form.querySelector('input[name="upi_id"]');
+                
+                verifyButton.addEventListener('click', function() {
+                    const upiId = upiInput.value;
+                    if (validateUpiId(upiId)) {
+                        verifyButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                        verifyButton.disabled = true;
+                        
+                        // Simulate UPI verification
+                        setTimeout(() => {
+                            verifyButton.innerHTML = '<i class="fas fa-check-circle"></i> Verified';
+                            verifyButton.classList.remove('btn-outline-secondary');
+                            verifyButton.classList.add('btn-success');
+                            checkoutButton.disabled = false;
+                        }, 1500);
+                    } else {
+                        alert('Please enter a valid UPI ID');
+                    }
+                });
+                
+                // Disable checkout button until UPI is verified
+                checkoutButton.disabled = true;
+            }
+        }
+    }
+
+    // Handle payment method selection
+    paymentMethods.forEach(method => {
+        method.addEventListener('change', function() {
+            // Enable checkout button by default
+            checkoutButton.disabled = false;
+            
+            // Show relevant payment details
+            showPaymentDetails(this.value);
+        });
+    });
+
+    // Show details for default selected payment method
+    const defaultMethod = form.querySelector('input[name="payment_method"]:checked');
+    if (defaultMethod) {
+        showPaymentDetails(defaultMethod.value);
+    }
+
+    // Handle form submission
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const selectedMethod = form.querySelector('input[name="payment_method"]:checked').value;
+        
+        // Validate based on payment method
+        if (selectedMethod === 'upi') {
+            const upiId = form.querySelector('input[name="upi_id"]').value;
+            if (!validateUpiId(upiId)) {
+                alert('Please enter a valid UPI ID');
+                return;
+            }
+        } else if (selectedMethod === 'wallet') {
+            if (walletBalance < totalAmount) {
+                alert('Insufficient wallet balance');
+                return;
+            }
+        }
+        
+        // Submit the form if validation passes
+        this.submit();
+    });
+});
+</script>
+{% endblock %} 

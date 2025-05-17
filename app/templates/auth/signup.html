@@ -1,0 +1,370 @@
+{% extends "base.html" %}
+
+{% block title %}Sign Up - Agriverse{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --earth-brown: #8B4513;
+        --soil-dark: #32221A;
+        --wheat-gold: #F5DEB3;
+        --leaf-green: #556B2F;
+        --cream: #FFFDD0;
+    }
+
+    .auth-container {
+        min-height: 100vh;
+        width: 100%;
+        background: linear-gradient(135deg, rgba(139, 69, 19, 0.95), rgba(50, 34, 26, 0.90)),
+                    url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .auth-wrapper {
+        width: 100%;
+        max-width: 450px;
+        margin: 0 auto;
+        perspective: 1000px;
+    }
+
+    .auth-card {
+        background: rgba(255, 253, 208, 0.98);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        border: 1px solid rgba(245, 222, 179, 0.3);
+        padding: 3.5rem 3rem;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        width: 100%;
+        animation: slideUp 0.5s ease-out;
+        transform-origin: center center;
+    }
+
+    @media (max-width: 576px) {
+        .auth-card {
+            padding: 2.5rem 1.5rem;
+        }
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px) rotateX(-10deg);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) rotateX(0);
+        }
+    }
+
+    .auth-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding: 0 1rem;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .auth-header::after {
+        content: '';
+        position: absolute;
+        bottom: -1.5rem;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 3px;
+        background: linear-gradient(to right, var(--earth-brown), var(--leaf-green));
+        border-radius: 2px;
+    }
+
+    .auth-card h2 {
+        color: var(--earth-brown);
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 0.75rem;
+        font-size: 2.25rem;
+        text-shadow: 1px 1px 2px rgba(139, 69, 19, 0.1);
+        letter-spacing: -0.5px;
+        line-height: 1.2;
+    }
+
+    .auth-subtitle {
+        color: var(--soil-dark);
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin-top: 0.75rem;
+        font-weight: 500;
+        max-width: 80%;
+        line-height: 1.4;
+        text-transform: capitalize;
+    }
+
+    .form-container {
+        width: 100%;
+    }
+
+    .auth-card .form-label {
+        color: var(--soil-dark);
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 0.75rem;
+        display: block;
+        transition: all 0.3s ease;
+    }
+
+    .auth-card .form-control {
+        border: 2px solid rgba(139, 69, 19, 0.2);
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+        background-color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 0.5rem;
+        height: 3.25rem;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+        width: 100%;
+        display: block;
+    }
+
+    .auth-card .form-control:hover {
+        border-color: rgba(139, 69, 19, 0.3);
+        background-color: rgba(255, 255, 255, 0.95);
+    }
+
+    .auth-card .form-control:focus {
+        border-color: var(--earth-brown);
+        box-shadow: 0 0 0 0.25rem rgba(139, 69, 19, 0.15);
+        background-color: #fff;
+        outline: none;
+    }
+
+    .input-group {
+        position: relative;
+        margin-bottom: 2rem;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+    .input-group:focus-within .form-label {
+        color: var(--earth-brown);
+        transform: translateY(-2px);
+    }
+
+    .btn-auth {
+        background: var(--earth-brown);
+        color: var(--wheat-gold);
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        width: 100%;
+        margin-top: 1rem;
+        height: 3.25rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(139, 69, 19, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    .btn-auth:hover {
+        background: var(--soil-dark);
+        color: var(--cream);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(139, 69, 19, 0.3);
+    }
+
+    .btn-auth:active {
+        transform: translateY(1px);
+    }
+
+    .btn-auth i {
+        margin-right: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-auth:hover i {
+        transform: translateX(-3px);
+    }
+
+    .auth-footer {
+        text-align: center;
+        margin-top: 2.5rem;
+        color: var(--soil-dark);
+        font-size: 0.95rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(139, 69, 19, 0.1);
+    }
+
+    .auth-footer a {
+        color: var(--earth-brown);
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+        display: inline-block;
+    }
+
+    .auth-footer a:hover {
+        color: var(--leaf-green);
+        text-decoration: none;
+        background-color: rgba(139, 69, 19, 0.05);
+    }
+
+    .role-icon {
+        font-size: 3.75rem;
+        color: var(--earth-brown);
+        margin-bottom: 1.75rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        animation: fadeIn 0.5s ease-out 0.3s both;
+        display: block;
+        position: relative;
+    }
+
+    .role-icon::after {
+        content: '';
+        position: absolute;
+        width: 140%;
+        height: 140%;
+        background: radial-gradient(circle, rgba(139, 69, 19, 0.1) 0%, transparent 70%);
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: -1;
+        border-radius: 50%;
+    }
+
+    @keyframes fadeIn {
+        from { 
+            opacity: 0; 
+            transform: scale(0.9) translateY(-10px); 
+        }
+        to { 
+            opacity: 1; 
+            transform: scale(1) translateY(0); 
+        }
+    }
+
+    .text-danger {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        font-weight: 500;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        background-color: rgba(220, 53, 69, 0.1);
+        display: inline-block;
+    }
+
+    .form-text {
+        color: var(--soil-dark);
+        font-size: 0.875rem;
+        margin-top: 0.75rem;
+        opacity: 0.8;
+        display: block;
+        padding: 0.25rem 0;
+        transition: all 0.3s ease;
+    }
+
+    .input-group:focus-within .form-text {
+        opacity: 1;
+        color: var(--earth-brown);
+    }
+</style>
+
+<div class="auth-container">
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <div class="auth-header">
+                {% if role == 'farmer' %}
+                <i class="fas fa-tractor role-icon"></i>
+                {% elif role == 'investor' %}
+                <i class="fas fa-chart-line role-icon"></i>
+                {% endif %}
+                <h2>Create Your Account</h2>
+                <p class="auth-subtitle">Join Agriverse as a {{ role }}</p>
+            </div>
+            
+            <div class="form-container">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="input-group">
+                        <label for="name" class="form-label">Full Name</label>
+                        {{ form.name(class="form-control", placeholder="Enter your full name") }}
+                        {% for error in form.name.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="email" class="form-label">Email Address</label>
+                        {{ form.email(class="form-control", placeholder="Enter your email") }}
+                        {% for error in form.email.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                        <div class="form-text">We'll never share your email with anyone else.</div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="password" class="form-label">Password</label>
+                        {{ form.password(class="form-control", placeholder="Create a password") }}
+                        {% for error in form.password.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                        <div class="form-text">Use at least 8 characters with a mix of letters, numbers & symbols.</div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="confirm_password" class="form-label">Confirm Password</label>
+                        {{ form.confirm_password(class="form-control", placeholder="Confirm your password") }}
+                        {% for error in form.confirm_password.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    {% if role == 'farmer' %}
+                    <div class="input-group">
+                        <label for="location" class="form-label">Farm Location</label>
+                        {{ form.location(class="form-control", placeholder="Enter your farm location") }}
+                        {% for error in form.location.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="farm_size" class="form-label">Farm Size (in acres)</label>
+                        {{ form.farm_size(class="form-control", placeholder="Enter farm size") }}
+                        {% for error in form.farm_size.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <button type="submit" class="btn btn-auth">
+                        <i class="fas fa-user-plus"></i>Create Account
+                    </button>
+                </form>
+            </div>
+            
+            <div class="auth-footer">
+                <p class="mb-0">Already have an account? 
+                    <a href="{{ url_for('auth.login', role=role) }}">Login here</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Soil Reports Management{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">Soil Reports Management</h2>
+    
+    <!-- Reports Table -->
+    <div class="card">
+        <div class="card-body">
+            {% if reports %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Farmer</th>
+                            <th>Report Date</th>
+                            <th>pH Level</th>
+                            <th>Nitrogen (N)</th>
+                            <th>Phosphorus (P)</th>
+                            <th>Potassium (K)</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in reports %}
+                        <tr>
+                            <td>{{ report.id }}</td>
+                            <td>{{ report.farmer.name }}</td>
+                            <td>{{ report.report_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ report.ph_level }}</td>
+                            <td>{{ report.nitrogen_level }}</td>
+                            <td>{{ report.phosphorus_level }}</td>
+                            <td>{{ report.potassium_level }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if report.status == 'approved' else 'danger' if report.status == 'rejected' else 'warning' }}">
+                                    {{ report.status|title }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if report.status == 'pending' %}
+                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#reviewModal{{ report.id }}">
+                                    Review
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        
+                        <!-- Review Modal -->
+                        <div class="modal fade" id="reviewModal{{ report.id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Review Soil Report</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form action="{{ url_for('admin.update_soil_report', report_id=report.id) }}" method="POST">
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label class="form-label">Status</label>
+                                                <select name="status" class="form-select" required>
+                                                    <option value="approved">Approve</option>
+                                                    <option value="rejected">Reject</option>
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Notes</label>
+                                                <textarea name="notes" class="form-control" rows="3" placeholder="Add any notes or feedback...">{{ report.notes }}</textarea>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" class="btn btn-primary">Submit Review</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <p class="text-muted">No soil reports found.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

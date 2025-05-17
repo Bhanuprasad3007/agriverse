@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout - Agriverse{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h1 class="h3 mb-2">Checkout</h1>
+                    <p class="text-muted mb-0">Complete your purchase</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Order Summary -->
+        <div class="col-lg-8 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">Order Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-4">
+                        {% if product.image_url %}
+                        <img src="{{ product.image_url }}" alt="{{ product.name }}" class="rounded" style="width: 100px; height: 100px; object-fit: cover;">
+                        {% else %}
+                        <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
+                            <i class="fas fa-seedling fa-2x text-muted"></i>
+                        </div>
+                        {% endif %}
+                        <div class="ms-3">
+                            <h5 class="mb-1">{{ product.name }}</h5>
+                            <p class="text-muted mb-1">Seller: {{ product.seller.name }}</p>
+                            <p class="mb-0">
+                                <span class="text-primary">${{ "%.2f"|format(product.price) }}</span> per {{ product.unit }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-light border mb-4">
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <p class="mb-1"><strong>Quantity:</strong></p>
+                                <p class="text-muted">{{ quantity }} {{ product.unit }}</p>
+                            </div>
+                            <div class="col-sm-6">
+                                <p class="mb-1"><strong>Available Stock:</strong></p>
+                                <p class="text-muted">{{ "%.1f"|format(product.quantity) }} {{ product.unit }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shipping Address -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">Shipping Address</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">First Name</label>
+                            <input type="text" class="form-control" name="first_name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Last Name</label>
+                            <input type="text" class="form-control" name="last_name" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Address</label>
+                            <input type="text" class="form-control" name="address" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">City</label>
+                            <input type="text" class="form-control" name="city" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Postal Code</label>
+                            <input type="text" class="form-control" name="postal_code" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Details -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">Payment Method</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('main.process_checkout', product_id=product.id) }}" method="POST" id="payment-form">
+                        <input type="hidden" name="quantity" value="{{ quantity }}">
+                        <input type="hidden" name="total_amount" value="{{ total_amount }}">
+                        
+                        <!-- UPI Payment -->
+                        <div class="mb-4">
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="radio" name="payment_method" id="upi" value="upi" checked>
+                                <label class="form-check-label" for="upi">
+                                    <i class="fas fa-mobile-alt me-2"></i>UPI Payment
+                                </label>
+                            </div>
+                            <div id="upi-details" class="border rounded p-3">
+                                <div class="mb-3">
+                                    <label class="form-label">UPI ID</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" name="upi_id" placeholder="username@bank" pattern="[a-zA-Z0-9\.-]{2,256}@[a-zA-Z][a-zA-Z]{2,64}" required>
+                                        <button class="btn btn-outline-secondary" type="button" id="verify-upi">
+                                            <i class="fas fa-check-circle"></i>
+                                        </button>
+                                    </div>
+                                    <div class="form-text">Enter your UPI ID (e.g., username@upi)</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bank Account -->
+                        <div class="mb-4">
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="radio" name="payment_method" id="bank" value="bank">
+                                <label class="form-check-label" for="bank">
+                                    <i class="fas fa-university me-2"></i>Bank Account
+                                </label>
+                            </div>
+                            <div id="bank-details" class="border rounded p-3" style="display: none;">
+                                <div class="mb-3">
+                                    <label class="form-label">Account Number</label>
+                                    <input type="text" class="form-control" name="account_number" placeholder="Enter account number" pattern="[0-9]{9,18}">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">IFSC Code</label>
+                                    <input type="text" class="form-control" name="ifsc_code" placeholder="ABCD0123456" pattern="^[A-Z]{4}0[A-Z0-9]{6}$">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Account Holder Name</label>
+                                    <input type="text" class="form-control" name="account_holder">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card Payment -->
+                        <div class="mb-4">
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="radio" name="payment_method" id="card" value="card">
+                                <label class="form-check-label" for="card">
+                                    <i class="fas fa-credit-card me-2"></i>Credit/Debit Card
+                                </label>
+                            </div>
+                            <div id="card-details" class="border rounded p-3" style="display: none;">
+                                <div class="mb-3">
+                                    <label class="form-label">Card Number</label>
+                                    <input type="text" class="form-control" name="card_number" placeholder="1234 5678 9012 3456" pattern="[0-9]{16}">
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label">Expiry Date</label>
+                                        <input type="text" class="form-control" name="card_expiry" placeholder="MM/YY" pattern="(0[1-9]|1[0-2])\/([0-9]{2})">
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label">CVV</label>
+                                        <input type="text" class="form-control" name="card_cvv" placeholder="123" pattern="[0-9]{3,4}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Wallet -->
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method" id="wallet" value="wallet">
+                                <label class="form-check-label" for="wallet">
+                                    <i class="fas fa-wallet me-2"></i>Wallet Balance
+                                    <span class="badge bg-success ms-2">${{ "%.2f"|format(current_user.wallet_balance) }}</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>Subtotal</span>
+                            <span>${{ "%.2f"|format(total_amount) }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>Processing Fee (2%)</span>
+                            <span>${{ "%.2f"|format(total_amount * 0.02) }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-4">
+                            <strong>Total</strong>
+                            <strong>${{ "%.2f"|format(total_amount * 1.02) }}</strong>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-lock me-2"></i>Complete Purchase
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const paymentForm = document.getElementById('payment-form');
+    const paymentMethods = document.querySelectorAll('input[name="payment_method"]');
+    const paymentDetails = {
+        'upi': document.getElementById('upi-details'),
+        'bank': document.getElementById('bank-details'),
+        'card': document.getElementById('card-details')
+    };
+
+    // Toggle payment details visibility based on payment method
+    paymentMethods.forEach(method => {
+        method.addEventListener('change', function() {
+            // Hide all payment details first
+            Object.values(paymentDetails).forEach(detail => {
+                if (detail) detail.style.display = 'none';
+            });
+
+            // Show selected payment details
+            const selectedDetails = paymentDetails[this.value];
+            if (selectedDetails) {
+                selectedDetails.style.display = 'block';
+                
+                // Toggle required attributes
+                Object.entries(paymentDetails).forEach(([key, detail]) => {
+                    if (detail) {
+                        const inputs = detail.querySelectorAll('input');
+                        inputs.forEach(input => {
+                            input.required = (key === this.value);
+                        });
+                    }
+                });
+            }
+        });
+    });
+
+    // Format card number with spaces
+    const cardNumberInput = document.querySelector('input[name="card_number"]');
+    if (cardNumberInput) {
+        cardNumberInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\s/g, '');
+            value = value.replace(/\D/g, '');
+            value = value.replace(/(.{4})/g, '$1 ').trim();
+            e.target.value = value;
+        });
+    }
+
+    // Format expiry date
+    const expiryInput = document.querySelector('input[name="card_expiry"]');
+    if (expiryInput) {
+        expiryInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.slice(0,2) + '/' + value.slice(2);
+            }
+            e.target.value = value;
+        });
+    }
+
+    // Format CVV
+    const cvvInput = document.querySelector('input[name="card_cvv"]');
+    if (cvvInput) {
+        cvvInput.addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/\D/g, '').slice(0,4);
+        });
+    }
+
+    // UPI ID verification
+    const verifyUpiBtn = document.getElementById('verify-upi');
+    const upiInput = document.querySelector('input[name="upi_id"]');
+    if (verifyUpiBtn && upiInput) {
+        verifyUpiBtn.addEventListener('click', function() {
+            const upiId = upiInput.value;
+            if (upiId) {
+                // Add loading state
+                verifyUpiBtn.disabled = true;
+                verifyUpiBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+                // Simulate UPI verification (replace with actual API call)
+                setTimeout(() => {
+                    verifyUpiBtn.disabled = false;
+                    verifyUpiBtn.innerHTML = '<i class="fas fa-check-circle"></i>';
+                    alert('UPI ID verified successfully!');
+                }, 1500);
+            }
+        });
+    }
+});
+</script>
+{% endblock %} 

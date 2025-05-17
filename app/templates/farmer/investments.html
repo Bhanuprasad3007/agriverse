@@ -1,0 +1,427 @@
+{% extends "base.html" %}
+
+{% block title %}Investment Management - Agriverse{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h1 class="h3 mb-2">Investment Management</h1>
+                    <p class="text-muted mb-0">Create and manage your farming investment requests</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Investment Statistics -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
+                            <i class="fas fa-money-bill-wave text-primary fa-2x"></i>
+                        </div>
+                        <div>
+                            {% set total_active = 0 %}
+                            {% for investment in active_investments %}
+                                {% set total_active = total_active + investment.amount %}
+                            {% endfor %}
+                            <h3 class="mb-1">${{ "%.2f"|format(total_active) }}</h3>
+                            <p class="text-muted mb-0">Active Investments</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
+                            <i class="fas fa-check-circle text-success fa-2x"></i>
+                        </div>
+                        <div>
+                            <h3 class="mb-1">${{ "%.2f"|format(total_completed_amount) }}</h3>
+                            <p class="text-muted mb-0">Completed Investments</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-info bg-opacity-10 p-3 me-3">
+                            <i class="fas fa-chart-line text-info fa-2x"></i>
+                        </div>
+                        <div>
+                            <h3 class="mb-1">${{ "%.2f"|format(total_returns) }}</h3>
+                            <p class="text-muted mb-0">Total Returns</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-warning bg-opacity-10 p-3 me-3">
+                            <i class="fas fa-handshake text-warning fa-2x"></i>
+                        </div>
+                        <div>
+                            <h3 class="mb-1">{{ investment_offers|length }}</h3>
+                            <p class="text-muted mb-0">Pending Offers</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Investment Request -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">Create Investment Request</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('farmer.investments') }}" method="POST">
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Project Title</label>
+                                <input type="text" name="project_title" class="form-control" required 
+                                       placeholder="E.g., Organic Rice Cultivation Expansion">
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Amount Required ($)</label>
+                                    <input type="number" name="amount" class="form-control" required min="1" step="0.01"
+                                           placeholder="Enter amount needed">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Duration (months)</label>
+                                    <input type="number" name="duration" class="form-control" required min="1"
+                                           placeholder="Project duration">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Interest Rate (%)</label>
+                                    <input type="number" name="interest_rate" class="form-control" required min="0.1" max="20" step="0.1"
+                                           placeholder="Proposed interest rate">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Crop Type</label>
+                                    <input type="text" name="crop_type" class="form-control" required
+                                           placeholder="E.g., Rice, Wheat, Vegetables">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Land Size (acres)</label>
+                                    <input type="text" name="land_size" class="form-control" required
+                                           placeholder="Size of land for this project">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Expected Yield</label>
+                                    <input type="text" name="expected_yield" class="form-control" required
+                                           placeholder="E.g., 5000 kg per acre">
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Project Details</label>
+                                    <textarea name="description" class="form-control" rows="4" required
+                                             placeholder="Describe your farming project, experience, implementation plan, and how you plan to use the investment..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Create Request</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Investment Requests -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">My Investment Requests</h5>
+                </div>
+                <div class="card-body">
+                    {% if my_requests %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Project</th>
+                                    <th>Amount</th>
+                                    <th>Duration</th>
+                                    <th>Interest Rate</th>
+                                    <th>Created Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for request in my_requests %}
+                                <tr>
+                                    <td>{{ request.description.split('\n')[0] }}</td>
+                                    <td>${{ "%.2f"|format(request.amount) }}</td>
+                                    <td>{{ request.duration }} months</td>
+                                    <td>{{ "%.1f"|format(request.interest_rate) }}%</td>
+                                    <td>{{ request.created_at.strftime('%d %b %Y') }}</td>
+                                    <td>
+                                        <span class="badge bg-primary">Seeking Investment</span>
+                                    </td>
+                                    <td>
+                                        <button type="button" 
+                                                class="btn btn-sm btn-link" 
+                                                data-bs-toggle="tooltip" 
+                                                data-bs-placement="top" 
+                                                title="{{ request.description }}">
+                                            <i class="fas fa-info-circle"></i>
+                                        </button>
+                                        <form action="{{ url_for('farmer.investment_action', investment_id=request.id) }}" 
+                                              method="POST" class="d-inline">
+                                            <input type="hidden" name="action" value="cancel">
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted">No active investment requests.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Investment Offers -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">Investment Offers</h5>
+                </div>
+                <div class="card-body">
+                    {% if investment_offers %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Investor</th>
+                                    <th>Project</th>
+                                    <th>Amount</th>
+                                    <th>Interest Rate</th>
+                                    <th>Duration</th>
+                                    <th>Offer Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for offer in investment_offers %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-primary bg-opacity-10 rounded-circle p-2 me-2">
+                                                <i class="fas fa-user text-primary"></i>
+                                            </div>
+                                            {{ offer.investor.name }}
+                                        </div>
+                                    </td>
+                                    <td>{{ offer.description.split('\n')[0] }}</td>
+                                    <td>${{ "%.2f"|format(offer.amount) }}</td>
+                                    <td>{{ "%.1f"|format(offer.interest_rate) }}%</td>
+                                    <td>{{ offer.duration }} months</td>
+                                    <td>{{ offer.created_at.strftime('%d %b %Y') }}</td>
+                                    <td>
+                                        <button type="button" 
+                                                class="btn btn-sm btn-link" 
+                                                data-bs-toggle="tooltip" 
+                                                data-bs-placement="top" 
+                                                title="{{ offer.description }}">
+                                            <i class="fas fa-info-circle"></i>
+                                        </button>
+                                        <form action="{{ url_for('farmer.investment_action', investment_id=offer.id) }}" 
+                                              method="POST" class="d-inline">
+                                            <input type="hidden" name="action" value="accept">
+                                            <button type="submit" class="btn btn-sm btn-success">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </form>
+                                        <form action="{{ url_for('farmer.investment_action', investment_id=offer.id) }}" 
+                                              method="POST" class="d-inline">
+                                            <input type="hidden" name="action" value="reject">
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted">No pending investment offers.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Investments -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">Active Investments</h5>
+                </div>
+                <div class="card-body">
+                    {% if active_investments %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Investor</th>
+                                    <th>Project</th>
+                                    <th>Amount</th>
+                                    <th>Interest Rate</th>
+                                    <th>Duration</th>
+                                    <th>Start Date</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for investment in active_investments %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-primary bg-opacity-10 rounded-circle p-2 me-2">
+                                                <i class="fas fa-user text-primary"></i>
+                                            </div>
+                                            {{ investment.investor.name }}
+                                        </div>
+                                    </td>
+                                    <td>{{ investment.description.split('\n')[0] }}</td>
+                                    <td>${{ "%.2f"|format(investment.amount) }}</td>
+                                    <td>{{ "%.1f"|format(investment.interest_rate) }}%</td>
+                                    <td>{{ investment.duration }} months</td>
+                                    <td>{{ investment.created_at.strftime('%d %b %Y') }}</td>
+                                    <td>
+                                        <button type="button" 
+                                                class="btn btn-sm btn-link" 
+                                                data-bs-toggle="tooltip" 
+                                                data-bs-placement="top" 
+                                                title="{{ investment.description }}">
+                                            <i class="fas fa-info-circle"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted">No active investments.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Completed Investments -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">Completed Investments</h5>
+                </div>
+                <div class="card-body">
+                    {% if completed_investments %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Investor</th>
+                                    <th>Project</th>
+                                    <th>Amount</th>
+                                    <th>Interest Rate</th>
+                                    <th>Duration</th>
+                                    <th>Completion Date</th>
+                                    <th>Total Return</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for investment in completed_investments %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-primary bg-opacity-10 rounded-circle p-2 me-2">
+                                                <i class="fas fa-user text-primary"></i>
+                                            </div>
+                                            {{ investment.investor.name }}
+                                        </div>
+                                    </td>
+                                    <td>{{ investment.description.split('\n')[0] }}</td>
+                                    <td>${{ "%.2f"|format(investment.amount) }}</td>
+                                    <td>{{ "%.1f"|format(investment.interest_rate) }}%</td>
+                                    <td>{{ investment.duration }} months</td>
+                                    <td>{{ investment.created_at.strftime('%d %b %Y') }}</td>
+                                    <td>${{ "%.2f"|format(investment.amount * (1 + investment.interest_rate/100)) }}</td>
+                                    <td>
+                                        <button type="button" 
+                                                class="btn btn-sm btn-link" 
+                                                data-bs-toggle="tooltip" 
+                                                data-bs-placement="top" 
+                                                title="{{ investment.description }}">
+                                            <i class="fas fa-info-circle"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted">No completed investments.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+</script>
+{% endblock %} 

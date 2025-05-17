@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Government Schemes - Agriverse{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h1 class="h3 mb-2">Government Schemes</h1>
+                    <p class="text-muted mb-0">Browse and apply for available agricultural schemes</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Schemes -->
+    <div class="row">
+        {% for scheme in schemes %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">{{ scheme.name }}</h5>
+                    <p class="card-text text-muted small mb-2">
+                        Valid from {{ scheme.start_date.strftime('%d %b %Y') }} to {{ scheme.end_date.strftime('%d %b %Y') }}
+                    </p>
+                    <p class="card-text">{{ scheme.description }}</p>
+                    
+                    <div class="mb-3">
+                        <h6 class="mb-2">Eligibility Criteria:</h6>
+                        <p class="card-text">{{ scheme.eligibility_criteria }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="mb-2">Benefits:</h6>
+                        <p class="card-text">{{ scheme.benefits }}</p>
+                    </div>
+                    
+                    {% set has_applied = false %}
+                    {% for application in applications %}
+                        {% if application.scheme_id == scheme.id %}
+                            {% set has_applied = true %}
+                            <div class="alert alert-info">
+                                Application Status: <strong>{{ application.status|title }}</strong>
+                                {% if application.notes %}
+                                <br>
+                                <small>{{ application.notes }}</small>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if not has_applied %}
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#applySchemeModal{{ scheme.id }}">
+                        Apply Now
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Apply Scheme Modal -->
+        {% if not has_applied %}
+        <div class="modal fade" id="applySchemeModal{{ scheme.id }}" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Apply for {{ scheme.name }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form action="{{ url_for('farmer.apply_scheme', scheme_id=scheme.id) }}" method="POST" enctype="multipart/form-data">
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Supporting Documents</label>
+                                <input type="file" class="form-control" name="documents" required>
+                                <div class="form-text">Upload relevant documents to support your application.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Additional Notes</label>
+                                <textarea class="form-control" name="notes" rows="3" placeholder="Any additional information you'd like to provide..."></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Submit Application</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                No active government schemes available at the moment.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- My Applications -->
+    {% if applications %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h2 class="h4 mb-4">My Applications</h2>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Scheme Name</th>
+                                    <th>Application Date</th>
+                                    <th>Status</th>
+                                    <th>Documents</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for application in applications %}
+                                <tr>
+                                    <td>{{ application.scheme.name }}</td>
+                                    <td>{{ application.application_date.strftime('%d %b %Y') }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ {
+                                            'pending': 'warning',
+                                            'approved': 'success',
+                                            'rejected': 'danger'
+                                        }[application.status] }}">
+                                            {{ application.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if application.documents_url %}
+                                        <a href="{{ application.documents_url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-file-download"></i> View
+                                        </a>
+                                        {% else %}
+                                        <span class="text-muted">No documents</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ application.notes or 'No notes' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

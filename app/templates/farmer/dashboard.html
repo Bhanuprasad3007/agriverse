@@ -1,0 +1,324 @@
+{% extends "base.html" %}
+
+{% block title %}Farmer Dashboard - Agriverse{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div>
+                            <h1 class="h3 mb-2">Welcome, {{ current_user.name }}!</h1>
+                            <p class="text-muted mb-0">{{ current_user.farm_name }} - {{ current_user.farm_location }}</p>
+                        </div>
+                        <div class="ms-auto">
+                            <a href="{{ url_for('farmer.products') }}" class="btn btn-primary me-2">
+                                <i class="fas fa-plus me-2"></i>Add Product
+                            </a>
+                            <a href="{{ url_for('farmer.soil_reports') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-file-upload me-2"></i>Upload Soil Report
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon bg-light rounded-circle p-3 me-3">
+                        <i class="fas fa-box fa-2x text-primary"></i>
+                    </div>
+                    <div>
+                        <h3>{{ products|length }}</h3>
+                        <p>Active Products</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon bg-light rounded-circle p-3 me-3">
+                        <i class="fas fa-hand-holding-usd fa-2x text-primary"></i>
+                    </div>
+                    <div>
+                        <h3>${{ "%.2f"|format(total_active_amount) }}</h3>
+                        <p>Active Investments</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon bg-light rounded-circle p-3 me-3">
+                        <i class="fas fa-check-circle fa-2x text-primary"></i>
+                    </div>
+                    <div>
+                        <h3>${{ "%.2f"|format(total_completed_amount) }}</h3>
+                        <p>Completed Investments</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon bg-light rounded-circle p-3 me-3">
+                        <i class="fas fa-chart-line fa-2x text-primary"></i>
+                    </div>
+                    <div>
+                        <h3>${{ "%.2f"|format(total_returns) }}</h3>
+                        <p>Total Returns</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="d-flex align-items-center">
+                    <div class="stats-icon bg-light rounded-circle p-3 me-3">
+                        <i class="fas fa-handshake fa-2x text-primary"></i>
+                    </div>
+                    <div>
+                        <h3>{{ investment_offers|length }}</h3>
+                        <p>Pending Offers</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row">
+        <!-- Recent Products -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3">
+                    <div class="d-flex align-items-center">
+                        <h5 class="mb-0">Recent Products</h5>
+                        <a href="{{ url_for('farmer.products') }}" class="btn btn-sm btn-outline-primary ms-auto">View All</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in products[:5] %}
+                                <tr>
+                                    <td>{{ product.name }}</td>
+                                    <td>${{ "%.2f"|format(product.price) }}</td>
+                                    <td>{{ product.quantity }} {{ product.unit }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if product.status == 'available' else 'secondary' }}">
+                                            {{ product.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Investments -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3">
+                    <div class="d-flex align-items-center">
+                        <h5 class="mb-0">Recent Investments</h5>
+                        <a href="{{ url_for('farmer.investments') }}" class="btn btn-sm btn-outline-primary ms-auto">View All</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Project</th>
+                                    <th>Amount</th>
+                                    <th>Duration</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for request in investment_requests[:2] %}
+                                <tr>
+                                    <td>{{ request.description.split('\n')[1] }}</td>
+                                    <td>${{ "%.2f"|format(request.amount) }}</td>
+                                    <td>{{ request.duration }} months</td>
+                                    <td>
+                                        <span class="badge bg-info">Seeking</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                {% for offer in investment_offers[:2] %}
+                                <tr>
+                                    <td>{{ offer.description.split('\n')[1] }}</td>
+                                    <td>${{ "%.2f"|format(offer.amount) }}</td>
+                                    <td>{{ offer.duration }} months</td>
+                                    <td>
+                                        <span class="badge bg-warning">Offered</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                {% for investment in active_investments[:2] %}
+                                <tr>
+                                    <td>{{ investment.description.split('\n')[1] }}</td>
+                                    <td>${{ "%.2f"|format(investment.amount) }}</td>
+                                    <td>{{ investment.duration }} months</td>
+                                    <td>
+                                        <span class="badge bg-success">Active</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sales Chart -->
+        <div class="col-md-8 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">Sales Performance</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="salesChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Soil Reports -->
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <div class="d-flex align-items-center">
+                        <h5 class="mb-0">Recent Soil Reports</h5>
+                        <a href="{{ url_for('farmer.soil_reports') }}" class="btn btn-sm btn-outline-primary ms-auto">View All</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% for report in soil_reports[:3] %}
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="me-3">
+                            <span class="badge bg-{{ 'success' if report.status == 'approved' else 'warning' }} p-2">
+                                <i class="fas fa-file-alt fa-lg"></i>
+                            </span>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">Report #{{ report.id }}</h6>
+                            <small class="text-muted">{{ report.report_date.strftime('%B %d, %Y') }}</small>
+                        </div>
+                        <div class="ms-auto">
+                            <span class="badge bg-{{ 'success' if report.status == 'approved' else 'warning' }}">
+                                {{ report.status }}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Sales Chart
+const ctx = document.getElementById('salesChart').getContext('2d');
+const salesChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: {{ sales_labels | tojson }},
+        datasets: [{
+            label: 'Total Sales',
+            data: {{ sales_values | tojson }},
+            borderColor: 'rgb(25, 135, 84)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// Initialize tooltips
+var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl)
+});
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.stats-card {
+    background: linear-gradient(135deg, var(--primary-color), #146c43);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    height: 100%;
+}
+
+.stats-icon {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stats-card h3 {
+    font-size: 1.8rem;
+    margin-bottom: 0.2rem;
+}
+
+.stats-card p {
+    margin-bottom: 0;
+    opacity: 0.8;
+}
+
+.table th {
+    font-weight: 600;
+    background-color: #f8f9fa;
+}
+
+.badge {
+    padding: 0.5em 0.8em;
+}
+</style>
+{% endblock %} 

@@ -1,0 +1,628 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to Agriverse{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --earth-brown: #8B4513;
+        --soil-dark: #32221A;
+        --wheat-gold: #F5DEB3;
+        --leaf-green: #556B2F;
+        --sky-blue: #87CEEB;
+        --cream: #FFFDD0;
+    }
+
+    /* Header Styles */
+    .main-header {
+        background: rgba(50, 34, 26, 0.95);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        padding: 1.25rem 0;
+        transition: all 0.3s ease;
+        border-bottom: 1px solid rgba(245, 222, 179, 0.1);
+    }
+
+    .main-header.scrolled {
+        background: rgba(50, 34, 26, 0.98);
+        padding: 0.75rem 0;
+    }
+
+    .nav-link-custom {
+        color: var(--wheat-gold);
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        margin: 0 0.5rem;
+        border-radius: 25px;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        position: relative;
+    }
+
+    .nav-link-custom::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        width: 0;
+        height: 2px;
+        background: var(--wheat-gold);
+        transition: all 0.3s ease;
+        transform: translateX(-50%);
+    }
+
+    .nav-link-custom:hover::after {
+        width: 80%;
+    }
+
+    .nav-link-custom:hover {
+        color: var(--cream);
+        transform: translateY(-2px);
+    }
+
+    .nav-link-custom.active {
+        color: var(--cream);
+        background: rgba(139, 69, 19, 0.3);
+    }
+
+    .brand-logo {
+        color: var(--wheat-gold);
+        font-size: 1.5rem;
+        font-weight: 700;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .brand-logo:hover {
+        color: var(--cream);
+    }
+
+    .brand-logo i {
+        font-size: 1.8rem;
+    }
+
+    /* Adjust hero section for fixed header */
+    .hero-section {
+        margin-top: 90px;
+        padding: 7rem 0 6rem;
+        background: linear-gradient(135deg, rgba(139, 69, 19, 0.95), rgba(50, 34, 26, 0.90)),
+                    url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
+        background-size: cover;
+        background-position: center;
+        color: var(--wheat-gold);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 150px;
+        background: linear-gradient(transparent, var(--bs-body-bg));
+    }
+
+    .feature-card {
+        border: none;
+        background: rgba(255, 253, 208, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        transition: all 0.3s ease;
+        color: var(--soil-dark);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(139, 69, 19, 0.2);
+        background: rgba(255, 253, 208, 1);
+    }
+
+    .feature-card h3 {
+        color: var(--earth-brown);
+        font-weight: 600;
+    }
+
+    .feature-card p {
+        color: #333333;
+        line-height: 1.6;
+    }
+
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        background: var(--earth-brown);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        color: var(--wheat-gold);
+        font-size: 2rem;
+        transition: all 0.3s ease;
+    }
+
+    .feature-card:hover .feature-icon {
+        background: var(--leaf-green);
+        transform: rotate(360deg);
+    }
+
+    .stats-section {
+        background: linear-gradient(45deg, var(--soil-dark), var(--earth-brown));
+        padding: 4rem 0;
+        color: var(--wheat-gold);
+    }
+
+    .stat-card {
+        text-align: center;
+        padding: 2rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        backdrop-filter: blur(5px);
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+        color: var(--wheat-gold);
+    }
+
+    .cta-section {
+        background: linear-gradient(135deg, var(--leaf-green), var(--earth-brown));
+        padding: 4rem 0;
+        color: var(--wheat-gold);
+        text-align: center;
+    }
+
+    .btn-earth {
+        background: var(--wheat-gold);
+        color: var(--earth-brown);
+        border: none;
+        padding: 1rem 2rem;
+        font-weight: 600;
+        border-radius: 50px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-earth:hover {
+        background: var(--cream);
+        transform: scale(1.05);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .testimonial-card {
+        background: rgba(255, 253, 208, 0.05);
+        border-radius: 15px;
+        padding: 2rem;
+        margin: 1rem 0;
+    }
+
+    .testimonial-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        margin-bottom: 1rem;
+        border: 3px solid var(--wheat-gold);
+    }
+
+    .section-title {
+        position: relative;
+        margin-bottom: 3rem;
+        color: var(--earth-brown);
+    }
+
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100px;
+        height: 3px;
+        background: var(--earth-brown);
+    }
+
+    /* Auth Button Styles */
+    .auth-buttons {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .btn-login {
+        background: transparent;
+        color: var(--wheat-gold);
+        border: 2px solid var(--wheat-gold);
+        padding: 0.5rem 1.5rem;
+        border-radius: 25px;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+
+    .btn-login:hover {
+        background: rgba(245, 222, 179, 0.1);
+        color: var(--cream);
+        border-color: var(--cream);
+        transform: translateY(-2px);
+    }
+
+    .btn-register {
+        background: var(--wheat-gold);
+        color: var(--earth-brown);
+        border: none;
+        padding: 0.5rem 1.5rem;
+        border-radius: 25px;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+
+    .btn-register:hover {
+        background: var(--cream);
+        transform: translateY(-2px);
+    }
+
+    .auth-dropdown {
+        background: rgba(50, 34, 26, 0.95);
+        border: 1px solid rgba(245, 222, 179, 0.1);
+        border-radius: 15px;
+        padding: 0.5rem;
+        margin-top: 0.5rem;
+        backdrop-filter: blur(10px);
+    }
+
+    .auth-dropdown .dropdown-item {
+        color: var(--wheat-gold);
+        border-radius: 10px;
+        padding: 0.5rem 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .auth-dropdown .dropdown-item:hover {
+        background: rgba(245, 222, 179, 0.1);
+        color: var(--cream);
+        transform: translateX(5px);
+    }
+
+    /* Adjust mobile menu for auth buttons */
+    .mobile-auth-buttons {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(245, 222, 179, 0.1);
+    }
+
+    .mobile-auth-buttons .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Update section title for features */
+    #features .section-title {
+        color: var(--earth-brown);
+    }
+
+    #features .section-title::after {
+        background: var(--earth-brown);
+    }
+</style>
+
+<!-- Header -->
+<header class="main-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <a href="{{ url_for('main.index') }}" class="brand-logo">
+                <i class="fas fa-leaf"></i>
+                Agriverse
+            </a>
+            <nav class="d-none d-md-flex align-items-center">
+                <a href="#home" class="nav-link-custom active">Home</a>
+                <a href="#features" class="nav-link-custom">Features</a>
+                <a href="#services" class="nav-link-custom">Services</a>
+                <a href="#about" class="nav-link-custom">About Us</a>
+            </nav>
+            <div class="auth-buttons d-none d-md-flex">
+                <!-- Login Dropdown -->
+                <div class="dropdown">
+                    <button class="btn btn-login dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user me-2"></i>Login
+                    </button>
+                    <ul class="dropdown-menu auth-dropdown">
+                        <li><a class="dropdown-item" href="{{ url_for('auth.login', role='farmer') }}">
+                            <i class="fas fa-tractor me-2"></i>Farmer Login
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('auth.login', role='investor') }}">
+                            <i class="fas fa-chart-line me-2"></i>Investor Login
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('auth.login', role='admin') }}">
+                            <i class="fas fa-user-shield me-2"></i>Admin Login
+                        </a></li>
+                    </ul>
+                </div>
+                <!-- Register Dropdown -->
+                <div class="dropdown">
+                    <button class="btn btn-register dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-plus me-2"></i>Register
+                    </button>
+                    <ul class="dropdown-menu auth-dropdown">
+                        <li><a class="dropdown-item" href="{{ url_for('auth.signup', role='farmer') }}">
+                            <i class="fas fa-tractor me-2"></i>Register as Farmer
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('auth.signup', role='investor') }}">
+                            <i class="fas fa-chart-line me-2"></i>Register as Investor
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+            <!-- Mobile Menu Button -->
+            <button class="btn btn-earth d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </div>
+</header>
+
+<!-- Mobile Menu -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="mobileMenu">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title">Menu</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div class="d-flex flex-column gap-3">
+            <a href="#home" class="nav-link-custom active">Home</a>
+            <a href="#features" class="nav-link-custom">Features</a>
+            <a href="#services" class="nav-link-custom">Services</a>
+            <a href="#about" class="nav-link-custom">About Us</a>
+            
+            <!-- Mobile Auth Buttons -->
+            <div class="mobile-auth-buttons">
+                <div class="accordion" id="authAccordion">
+                    <!-- Login Accordion -->
+                    <div class="accordion-item bg-transparent">
+                        <h2 class="accordion-header">
+                            <button class="btn btn-login w-100 mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#loginCollapse">
+                                <i class="fas fa-user me-2"></i>Login
+                            </button>
+                        </h2>
+                        <div id="loginCollapse" class="accordion-collapse collapse" data-bs-parent="#authAccordion">
+                            <div class="accordion-body p-0">
+                                <a href="{{ url_for('auth.login', role='farmer') }}" class="dropdown-item">
+                                    <i class="fas fa-tractor me-2"></i>Farmer Login
+                                </a>
+                                <a href="{{ url_for('auth.login', role='investor') }}" class="dropdown-item">
+                                    <i class="fas fa-chart-line me-2"></i>Investor Login
+                                </a>
+                                <a href="{{ url_for('auth.login', role='admin') }}" class="dropdown-item">
+                                    <i class="fas fa-user-shield me-2"></i>Admin Login
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Register Accordion -->
+                    <div class="accordion-item bg-transparent">
+                        <h2 class="accordion-header">
+                            <button class="btn btn-register w-100" type="button" data-bs-toggle="collapse" data-bs-target="#registerCollapse">
+                                <i class="fas fa-user-plus me-2"></i>Register
+                            </button>
+                        </h2>
+                        <div id="registerCollapse" class="accordion-collapse collapse" data-bs-parent="#authAccordion">
+                            <div class="accordion-body p-0">
+                                <a href="{{ url_for('auth.signup', role='farmer') }}" class="dropdown-item">
+                                    <i class="fas fa-tractor me-2"></i>Register as Farmer
+                                </a>
+                                <a href="{{ url_for('auth.signup', role='investor') }}" class="dropdown-item">
+                                    <i class="fas fa-chart-line me-2"></i>Register as Investor
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hero Section -->
+<section class="hero-section text-center" id="home">
+    <div class="container">
+        <h1 class="display-3 mb-4">Welcome to Agriverse</h1>
+        <p class="lead mb-5">Connecting Farmers, Investors, and Innovation in Agriculture</p>
+        <div class="row justify-content-center">
+            <div class="col-md-4">
+                <a href="{{ url_for('auth.signup', role='farmer') }}" class="btn btn-earth btn-lg mb-3 w-100">
+                    <i class="fas fa-tractor me-2"></i>Join as Farmer
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="{{ url_for('auth.signup', role='investor') }}" class="btn btn-earth btn-lg mb-3 w-100">
+                    <i class="fas fa-chart-line me-2"></i>Join as Investor
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5" id="features">
+    <div class="container">
+        <h2 class="text-center section-title mb-5">Our Features</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card p-4 h-100">
+                    <div class="feature-icon">
+                        <i class="fas fa-seedling"></i>
+                    </div>
+                    <h3 class="h4 text-center mb-3">Smart Farming</h3>
+                    <p class="text-center mb-0">Leverage technology and data analytics to optimize your agricultural operations and increase yield.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card p-4 h-100">
+                    <div class="feature-icon">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <h3 class="h4 text-center mb-3">Investment Platform</h3>
+                    <p class="text-center mb-0">Connect with investors and secure funding for your agricultural projects.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card p-4 h-100">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h3 class="h4 text-center mb-3">Market Analysis</h3>
+                    <p class="text-center mb-0">Access real-time market data and insights to make informed decisions.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section" id="services">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-number">5000+</div>
+                    <div class="stat-label">Farmers</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-number">1000+</div>
+                    <div class="stat-label">Investors</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-number">₹10Cr+</div>
+                    <div class="stat-label">Investments</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-number">20+</div>
+                    <div class="stat-label">States</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="py-5" id="about">
+    <div class="container">
+        <h2 class="text-center section-title mb-5">Success Stories</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="testimonial-card text-center">
+                    <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="Farmer" class="testimonial-avatar">
+                    <h4>Rajesh Kumar</h4>
+                    <p class="text-muted mb-3">Organic Farmer, Punjab</p>
+                    <p>"Agriverse helped me connect with investors and expand my organic farming business. The platform's support has been invaluable."</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="testimonial-card text-center">
+                    <img src="https://randomuser.me/api/portraits/women/1.jpg" alt="Investor" class="testimonial-avatar">
+                    <h4>Priya Sharma</h4>
+                    <p class="text-muted mb-3">Angel Investor</p>
+                    <p>"As an investor, I've found great opportunities in agriculture through Agriverse. The platform makes it easy to connect with innovative farmers."</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="testimonial-card text-center">
+                    <img src="https://randomuser.me/api/portraits/men/2.jpg" alt="Farmer" class="testimonial-avatar">
+                    <h4>Suresh Patel</h4>
+                    <p class="text-muted mb-3">Tech Farmer, Gujarat</p>
+                    <p>"The technology and market insights provided by Agriverse have helped me modernize my farming practices and increase productivity."</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container">
+        <h2 class="display-4 mb-4">Ready to Transform Agriculture?</h2>
+        <p class="lead mb-5">Join thousands of farmers and investors who are already part of the Agriverse community</p>
+        <div class="row justify-content-center">
+            <div class="col-md-4">
+                <a href="{{ url_for('auth.signup', role='farmer') }}" class="btn btn-earth btn-lg mb-3 w-100">
+                    <i class="fas fa-user-plus me-2"></i>Get Started Today
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Header scroll effect
+        const header = document.querySelector('.main-header');
+        const scrollThreshold = 50;
+
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > scrollThreshold) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Smooth scroll for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    const headerHeight = document.querySelector('.main-header').offsetHeight;
+                    const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+                    
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+
+                    // Update active state
+                    document.querySelectorAll('.nav-link-custom').forEach(link => {
+                        link.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                }
+            });
+        });
+
+        // Update active menu item on scroll
+        window.addEventListener('scroll', () => {
+            let current = '';
+            document.querySelectorAll('section[id]').forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (window.scrollY >= sectionTop - 150) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            document.querySelectorAll('.nav-link-custom').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %} 

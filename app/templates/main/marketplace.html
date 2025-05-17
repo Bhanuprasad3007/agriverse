@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+
+{% block title %}Marketplace - Agriverse{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h1 class="h3 mb-2">Agricultural Marketplace</h1>
+                    <p class="text-muted mb-0">Browse and purchase agricultural products directly from farmers</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shopping Cart Summary -->
+    <div class="row mb-4" id="cartSummary" style="display: none;">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-shopping-cart me-2"></i>
+                        Shopping Cart
+                        <span class="badge bg-primary ms-2" id="cartCount">0</span>
+                    </h5>
+                    <button class="btn btn-primary" id="checkoutCart">
+                        <i class="fas fa-shopping-bag me-2"></i>
+                        Checkout Cart
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="cartItems" class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th>Total</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Cart items will be dynamically added here -->
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>Total Amount:</strong></td>
+                                    <td colspan="2"><strong id="cartTotal">$0.00</strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Categories -->
+    {% for category, products in products_by_category.items() %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">{{ category|title }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="product-grid">
+                        {% for product in products %}
+                        <div class="product-card" data-product-id="{{ product.id }}">
+                            {% if product.image_url %}
+                            <img src="{{ product.image_url }}" class="card-img-top" alt="{{ product.name }}">
+                            {% else %}
+                            <div class="bg-light">
+                                <i class="fas fa-seedling fa-3x text-muted"></i>
+                            </div>
+                            {% endif %}
+                            <div class="card-body">
+                                <h5 class="card-title">{{ product.name }}</h5>
+                                <p class="card-text">{{ product.description }}</p>
+                                <div class="price-info">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <p class="mb-0"><strong>${{ "%.2f"|format(product.price) }}</strong> per {{ product.unit }}</p>
+                                            <small class="text-muted">Available: {{ "%.1f"|format(product.quantity) }} {{ product.unit }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="seller-info mb-3">
+                                    <small class="text-muted">Seller:</small>
+                                    <span class="text-primary">{{ product.seller.name }}</span>
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <button type="button" 
+                                            class="btn btn-primary buy-now"
+                                            data-product-id="{{ product.id }}"
+                                            data-product-name="{{ product.name }}"
+                                            data-product-price="{{ product.price }}"
+                                            data-product-unit="{{ product.unit }}"
+                                            data-product-quantity="{{ product.quantity }}">
+                                        <i class="fas fa-bolt me-2"></i>Buy Now
+                                    </button>
+                                    <button type="button" 
+                                            class="btn btn-outline-primary add-to-cart"
+                                            data-product-id="{{ product.id }}"
+                                            data-product-name="{{ product.name }}"
+                                            data-product-price="{{ product.price }}"
+                                            data-product-unit="{{ product.unit }}"
+                                            data-product-quantity="{{ product.quantity }}">
+                                        <i class="fas fa-cart-plus me-2"></i>Add to Cart
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-store fa-3x text-muted mb-3"></i>
+                    <h3 class="h4 mb-2">No Products Available</h3>
+                    <p class="text-muted mb-0">Check back later for new products from our farmers.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Quantity Modal -->
+<div class="modal fade" id="quantityModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select Quantity</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Quantity</label>
+                    <input type="number" class="form-control" id="productQuantity" min="0.1" step="0.1" value="1">
+                    <div class="form-text">Available: <span id="availableQuantity">0</span></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Total Amount</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="text" class="form-control" id="totalAmount" readonly>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmQuantity">
+                    <i class="fas fa-check me-2"></i>Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let cart = [];
+    const quantityModal = new bootstrap.Modal(document.getElementById('quantityModal'));
+    let currentAction = null;
+    let selectedProduct = null;
+
+    // Function to update cart display
+    function updateCartDisplay() {
+        const cartSummary = document.getElementById('cartSummary');
+        const cartCount = document.getElementById('cartCount');
+        const cartItems = document.getElementById('cartItems').querySelector('tbody');
+        const cartTotal = document.getElementById('cartTotal');
+        
+        if (cart.length > 0) {
+            cartSummary.style.display = 'block';
+            cartCount.textContent = cart.length;
+            
+            // Clear existing items
+            cartItems.innerHTML = '';
+            
+            // Calculate total
+            let total = 0;
+            
+            // Add each item
+            cart.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>$${item.price.toFixed(2)} per ${item.unit}</td>
+                    <td>${item.quantity} ${item.unit}</td>
+                    <td>$${(item.price * item.quantity).toFixed(2)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger remove-item" data-index="${index}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                cartItems.appendChild(tr);
+                total += item.price * item.quantity;
+            });
+            
+            cartTotal.textContent = `$${total.toFixed(2)}`;
+        } else {
+            cartSummary.style.display = 'none';
+        }
+    }
+
+    // Handle Buy Now button click
+    document.querySelectorAll('.buy-now').forEach(button => {
+        button.addEventListener('click', function() {
+            selectedProduct = {
+                id: this.dataset.productId,
+                name: this.dataset.productName,
+                price: parseFloat(this.dataset.productPrice),
+                unit: this.dataset.productUnit,
+                maxQuantity: parseFloat(this.dataset.productQuantity)
+            };
+            currentAction = 'buy';
+            
+            // Update modal
+            document.getElementById('availableQuantity').textContent = `${selectedProduct.maxQuantity} ${selectedProduct.unit}`;
+            document.getElementById('productQuantity').max = selectedProduct.maxQuantity;
+            
+            // Show modal
+            quantityModal.show();
+        });
+    });
+
+    // Handle Add to Cart button click
+    document.querySelectorAll('.add-to-cart').forEach(button => {
+        button.addEventListener('click', function() {
+            selectedProduct = {
+                id: this.dataset.productId,
+                name: this.dataset.productName,
+                price: parseFloat(this.dataset.productPrice),
+                unit: this.dataset.productUnit,
+                maxQuantity: parseFloat(this.dataset.productQuantity)
+            };
+            currentAction = 'cart';
+            
+            // Update modal
+            document.getElementById('availableQuantity').textContent = `${selectedProduct.maxQuantity} ${selectedProduct.unit}`;
+            document.getElementById('productQuantity').max = selectedProduct.maxQuantity;
+            
+            // Show modal
+            quantityModal.show();
+        });
+    });
+
+    // Handle quantity changes
+    document.getElementById('productQuantity').addEventListener('input', function() {
+        const quantity = parseFloat(this.value) || 0;
+        const total = quantity * selectedProduct.price;
+        document.getElementById('totalAmount').value = total.toFixed(2);
+    });
+
+    // Handle quantity confirmation
+    document.getElementById('confirmQuantity').addEventListener('click', function() {
+        const quantity = parseFloat(document.getElementById('productQuantity').value);
+        
+        if (quantity <= 0 || quantity > selectedProduct.maxQuantity) {
+            alert('Please enter a valid quantity');
+            return;
+        }
+        
+        if (currentAction === 'buy') {
+            // Redirect to payment selection with product details
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/select-payment/${selectedProduct.id}`;
+            
+            const quantityInput = document.createElement('input');
+            quantityInput.type = 'hidden';
+            quantityInput.name = 'quantity';
+            quantityInput.value = quantity;
+            
+            form.appendChild(quantityInput);
+            document.body.appendChild(form);
+            form.submit();
+        } else if (currentAction === 'cart') {
+            // Add to cart
+            cart.push({
+                id: selectedProduct.id,
+                name: selectedProduct.name,
+                price: selectedProduct.price,
+                unit: selectedProduct.unit,
+                quantity: quantity
+            });
+            
+            updateCartDisplay();
+            quantityModal.hide();
+        }
+    });
+
+    // Handle remove item from cart
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.remove-item')) {
+            const index = e.target.closest('.remove-item').dataset.index;
+            cart.splice(index, 1);
+            updateCartDisplay();
+        }
+    });
+
+    // Handle cart checkout
+    document.getElementById('checkoutCart').addEventListener('click', function() {
+        // Create form with cart items
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/checkout-cart';
+        
+        // Add cart items as hidden inputs
+        const cartInput = document.createElement('input');
+        cartInput.type = 'hidden';
+        cartInput.name = 'cart';
+        cartInput.value = JSON.stringify(cart);
+        
+        form.appendChild(cartInput);
+        document.body.appendChild(form);
+        form.submit();
+    });
+});
+</script>
+
+<style>
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.product-card {
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.product-card .card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+
+.product-card .bg-light {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+</style>
+{% endblock %} 

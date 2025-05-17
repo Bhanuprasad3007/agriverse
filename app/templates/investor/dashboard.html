@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block title %}Investor Dashboard - Agriverse{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h1 class="h3 mb-2">Welcome, {{ current_user.name }}</h1>
+                    <p class="text-muted mb-0">Manage your investments and track returns</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Investment Statistics -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
+                            <i class="fas fa-money-bill-wave text-primary fa-2x"></i>
+                        </div>
+                        <div>
+                            <h3 class="mb-1">${{ "%.2f"|format(total_invested) }}</h3>
+                            <p class="text-muted mb-0">Total Invested</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
+                            <i class="fas fa-chart-line text-success fa-2x"></i>
+                        </div>
+                        <div>
+                            <h3 class="mb-1">${{ "%.2f"|format(total_returns) }}</h3>
+                            <p class="text-muted mb-0">Total Returns</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-info bg-opacity-10 p-3 me-3">
+                            <i class="fas fa-percentage text-info fa-2x"></i>
+                        </div>
+                        <div>
+                            {% set active_investments = investments|selectattr('status', 'equalto', 'active')|list %}
+                            <h3 class="mb-1">{{ active_investments|length }}</h3>
+                            <p class="text-muted mb-0">Active Investments</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-warning bg-opacity-10 p-3 me-3">
+                            <i class="fas fa-clock text-warning fa-2x"></i>
+                        </div>
+                        <div>
+                            {% set completed_investments = investments|selectattr('status', 'equalto', 'completed')|list %}
+                            <h3 class="mb-1">{{ completed_investments|length }}</h3>
+                            <p class="text-muted mb-0">Completed Investments</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Investments -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <div class="d-flex align-items-center">
+                        <h5 class="mb-0">Recent Investments</h5>
+                        <a href="{{ url_for('investor.analytics') }}" class="btn btn-sm btn-outline-primary ms-auto">View All</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Farmer</th>
+                                    <th>Amount</th>
+                                    <th>Interest Rate</th>
+                                    <th>Duration</th>
+                                    <th>Start Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for investment in investments %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-primary bg-opacity-10 rounded-circle p-2 me-2">
+                                                <i class="fas fa-user text-primary"></i>
+                                            </div>
+                                            {{ investment.farmer.name }}
+                                        </div>
+                                    </td>
+                                    <td>${{ "%.2f"|format(investment.amount) }}</td>
+                                    <td>{{ "%.1f"|format(investment.interest_rate) }}%</td>
+                                    <td>{{ investment.duration }} months</td>
+                                    <td>{{ investment.created_at.strftime('%d %b %Y') }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ {
+                                            'pending': 'warning',
+                                            'active': 'success',
+                                            'completed': 'info',
+                                            'rejected': 'danger'
+                                        }[investment.status] }}">
+                                            {{ investment.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('investor.farmer_profile', farmer_id=investment.farmer_id) }}" 
+                                           class="btn btn-sm btn-link"
+                                           data-bs-toggle="tooltip"
+                                           data-bs-placement="top"
+                                           title="View farmer profile">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-4">
+                                        <div class="text-muted">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            No investments found. 
+                                            <a href="{{ url_for('investor.farmers') }}" class="text-primary">Browse farmers</a> 
+                                            to start investing.
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">Recent Transactions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in transactions %}
+                                <tr>
+                                    <td>#{{ transaction.id }}</td>
+                                    <td>{{ transaction.transaction_type|title }}</td>
+                                    <td>${{ "%.2f"|format(transaction.amount) }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if transaction.status == 'completed' else 'warning' }}">
+                                            {{ transaction.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>{{ transaction.created_at.strftime('%d %b %Y') }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4">
+                                        <div class="text-muted">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            No recent transactions.
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Initialize tooltips
+var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl)
+})
+</script>
+{% endblock %} 

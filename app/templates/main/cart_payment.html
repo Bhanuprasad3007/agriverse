@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}Cart Payment - Agriverse{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h1 class="h3 mb-2">Cart Payment</h1>
+                    <p class="text-muted mb-0">Complete your purchase</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Cart Summary -->
+        <div class="col-lg-8 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">Cart Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th class="text-end">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in cart_items %}
+                                <tr>
+                                    <td>{{ item.name }}</td>
+                                    <td>${{ "%.2f"|format(item.price) }} per {{ item.unit }}</td>
+                                    <td>{{ item.quantity }} {{ item.unit }}</td>
+                                    <td class="text-end">${{ "%.2f"|format(item.price * item.quantity) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>Subtotal:</strong></td>
+                                    <td class="text-end">${{ "%.2f"|format(total_amount) }}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>Processing Fee (2%):</strong></td>
+                                    <td class="text-end">${{ "%.2f"|format(total_amount * 0.02) }}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>Total Amount:</strong></td>
+                                    <td class="text-end"><strong>${{ "%.2f"|format(total_amount * 1.02) }}</strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Methods -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">Payment Method</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('main.process_cart_payment') }}" method="POST">
+                        <!-- UPI -->
+                        <div class="payment-option mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method" id="upi" value="upi" checked>
+                                <label class="form-check-label d-flex align-items-center" for="upi">
+                                    <i class="fas fa-mobile-alt fa-lg text-primary me-3"></i>
+                                    <div>
+                                        <h6 class="mb-0">UPI Payment</h6>
+                                        <small class="text-muted">Pay using UPI ID</small>
+                                    </div>
+                                </label>
+                            </div>
+                            <div id="upiDetails" class="mt-3" style="display: none;">
+                                <input type="text" class="form-control" id="upi_id" name="upi_id" placeholder="Enter your UPI ID">
+                            </div>
+                        </div>
+
+                        <!-- Card -->
+                        <div class="payment-option mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method" id="card" value="card">
+                                <label class="form-check-label d-flex align-items-center" for="card">
+                                    <i class="fas fa-credit-card fa-lg text-primary me-3"></i>
+                                    <div>
+                                        <h6 class="mb-0">Credit/Debit Card</h6>
+                                        <small class="text-muted">Secure online payment</small>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- COD -->
+                        <div class="payment-option mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method" id="cod" value="cod">
+                                <label class="form-check-label d-flex align-items-center" for="cod">
+                                    <i class="fas fa-truck fa-lg text-primary me-3"></i>
+                                    <div>
+                                        <h6 class="mb-0">Cash on Delivery</h6>
+                                        <small class="text-muted">Pay at your doorstep</small>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Info Section -->
+                        <div id="paymentDetails" class="mt-4">
+                            <!-- Will show selected payment method info -->
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 mt-4">
+                            <i class="fas fa-lock me-2"></i>Pay ${{ "%.2f"|format(total_amount * 1.02) }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.payment-option {
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    transition: all 0.3s ease;
+}
+
+.payment-option:hover {
+    border-color: #6c757d;
+    background-color: #f8f9fa;
+}
+
+.payment-option .form-check-label {
+    cursor: pointer;
+    width: 100%;
+    margin: 0;
+}
+</style>
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const paymentMethods = form.querySelectorAll('input[name="payment_method"]');
+    const paymentDetails = document.getElementById('paymentDetails');
+
+    function showPaymentDetails(method) {
+        // Hide all details sections first
+        document.getElementById('upiDetails').style.display = 'none';
+        // Add other payment method detail sections here if needed
+
+        if (method === 'upi') {
+            document.getElementById('upiDetails').style.display = 'block';
+            paymentDetails.innerHTML = `
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Please enter your UPI ID above and click Pay.
+                </div>`;
+        } else if (method === 'card') {
+            paymentDetails.innerHTML = `
+                <div class="alert alert-info">
+                    <i class="fas fa-lock me-2"></i>
+                    You will be redirected to a secure gateway to complete your card payment.
+                </div>`;
+        } else if (method === 'cod') {
+            paymentDetails.innerHTML = `
+                <div class="alert alert-success">
+                    <i class="fas fa-check me-2"></i>
+                    You can pay in cash when the order is delivered.
+                </div>`;
+        }
+    }
+
+    // Initial load
+    showPaymentDetails(form.querySelector('input[name="payment_method"]:checked').value);
+
+    // Listen for changes
+    paymentMethods.forEach(method => {
+        method.addEventListener('change', () => {
+            showPaymentDetails(method.value);
+        });
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

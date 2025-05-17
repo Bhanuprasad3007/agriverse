@@ -1,0 +1,448 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Agriverse{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --earth-brown: #8B4513;
+        --soil-dark: #32221A;
+        --wheat-gold: #F5DEB3;
+        --leaf-green: #556B2F;
+        --cream: #FFFDD0;
+    }
+
+    .auth-container {
+        min-height: 100vh;
+        width: 100%;
+        background: linear-gradient(135deg, rgba(139, 69, 19, 0.95), rgba(50, 34, 26, 0.90)),
+                    url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .auth-wrapper {
+        width: 100%;
+        max-width: 450px;
+        margin: 0 auto;
+        perspective: 1000px;
+    }
+
+    .auth-card {
+        background: rgba(255, 253, 208, 0.98);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        border: 1px solid rgba(245, 222, 179, 0.3);
+        padding: 3.5rem 3rem;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        width: 100%;
+        animation: slideUp 0.5s ease-out;
+        transform-origin: center center;
+    }
+
+    @media (max-width: 576px) {
+        .auth-card {
+            padding: 2.5rem 1.5rem;
+        }
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px) rotateX(-10deg);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) rotateX(0);
+        }
+    }
+
+    .auth-header {
+        text-align: center;
+        margin-bottom: 3.5rem;
+        padding: 1.5rem;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(to bottom, rgba(255, 253, 208, 0.3), transparent);
+        border-radius: 16px;
+    }
+
+    .auth-header::before {
+        content: '';
+        position: absolute;
+        top: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 3px;
+        background: linear-gradient(to right, var(--wheat-gold), var(--earth-brown));
+        border-radius: 2px;
+        opacity: 0.5;
+    }
+
+    .auth-header::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 3px;
+        background: linear-gradient(to right, var(--earth-brown), var(--leaf-green));
+        border-radius: 2px;
+    }
+
+    .auth-card h2 {
+        color: var(--earth-brown);
+        font-weight: 800;
+        text-align: center;
+        margin-bottom: 0.75rem;
+        font-size: 2.25rem;
+        text-shadow: 2px 2px 4px rgba(139, 69, 19, 0.15);
+        letter-spacing: -0.5px;
+        line-height: 1.2;
+        position: relative;
+        display: inline-block;
+    }
+
+    .auth-subtitle {
+        color: var(--soil-dark);
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin-top: 0.75rem;
+        font-weight: 500;
+        max-width: 80%;
+        line-height: 1.4;
+        background: linear-gradient(120deg, var(--earth-brown), var(--leaf-green));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .form-container {
+        width: 100%;
+    }
+
+    .auth-card .form-label {
+        color: var(--soil-dark);
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 0.75rem;
+        display: block;
+        transition: all 0.3s ease;
+    }
+
+    .auth-card .form-control {
+        border: 2px solid rgba(139, 69, 19, 0.2);
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+        background-color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 0.5rem;
+        height: 3.25rem;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+        width: 100%;
+        display: block;
+    }
+
+    .auth-card .form-control:hover {
+        border-color: rgba(139, 69, 19, 0.3);
+        background-color: rgba(255, 255, 255, 0.95);
+    }
+
+    .auth-card .form-control:focus {
+        border-color: var(--earth-brown);
+        box-shadow: 0 0 0 0.25rem rgba(139, 69, 19, 0.15);
+        background-color: #fff;
+        outline: none;
+    }
+
+    .input-group {
+        position: relative;
+        margin-bottom: 2rem;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+    .input-group:focus-within .form-label {
+        color: var(--earth-brown);
+        transform: translateY(-2px);
+    }
+
+    .form-check {
+        padding-left: 1.8rem;
+        margin-bottom: 2rem;
+        margin-top: 1rem;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+    }
+
+    .form-check-input {
+        width: 1.2rem;
+        height: 1.2rem;
+        margin-left: -1.8rem;
+        border: 2px solid var(--earth-brown);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        display: block;
+        flex-shrink: 0;
+    }
+
+    .form-check-input:checked {
+        background-color: var(--earth-brown);
+        border-color: var(--earth-brown);
+        animation: checkmark 0.2s ease-in-out;
+    }
+
+    @keyframes checkmark {
+        0% { transform: scale(0.8); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    .form-check-label {
+        color: var(--soil-dark);
+        font-weight: 500;
+        padding-top: 0.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-left: 0.5rem;
+        user-select: none;
+    }
+
+    .form-check:hover .form-check-label {
+        color: var(--earth-brown);
+    }
+
+    .btn-auth {
+        background: var(--earth-brown);
+        color: var(--wheat-gold);
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        width: 100%;
+        margin-top: 1rem;
+        height: 3.25rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(139, 69, 19, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    .btn-auth:hover {
+        background: var(--soil-dark);
+        color: var(--cream);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(139, 69, 19, 0.3);
+    }
+
+    .btn-auth:active {
+        transform: translateY(1px);
+    }
+
+    .btn-auth i {
+        margin-right: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-auth:hover i {
+        transform: translateX(-3px);
+    }
+
+    .auth-footer {
+        text-align: center;
+        margin-top: 2.5rem;
+        color: var(--soil-dark);
+        font-size: 0.95rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(139, 69, 19, 0.1);
+    }
+
+    .auth-footer a {
+        color: var(--earth-brown);
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+        display: inline-block;
+    }
+
+    .auth-footer a:hover {
+        color: var(--leaf-green);
+        text-decoration: none;
+        background-color: rgba(139, 69, 19, 0.05);
+    }
+
+    .role-icon-wrapper {
+        position: relative;
+        width: 100px;
+        height: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.75rem;
+    }
+
+    .role-icon {
+        font-size: 3.75rem;
+        color: var(--earth-brown);
+        text-shadow: 2px 2px 4px rgba(139, 69, 19, 0.1);
+        animation: fadeIn 0.5s ease-out 0.3s both;
+        display: block;
+        position: relative;
+        z-index: 2;
+    }
+
+    .role-icon-wrapper::before {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, rgba(139, 69, 19, 0.15) 0%, transparent 70%);
+        border-radius: 50%;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    .role-icon-wrapper::after {
+        content: '';
+        position: absolute;
+        width: 80%;
+        height: 80%;
+        border: 2px solid rgba(139, 69, 19, 0.1);
+        border-radius: 50%;
+        animation: rotate 10s linear infinite;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(0.95); opacity: 0.5; }
+        50% { transform: scale(1.05); opacity: 0.8; }
+        100% { transform: scale(0.95); opacity: 0.5; }
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeIn {
+        from { 
+            opacity: 0; 
+            transform: scale(0.9) translateY(-10px); 
+        }
+        to { 
+            opacity: 1; 
+            transform: scale(1) translateY(0); 
+        }
+    }
+
+    @media (max-width: 576px) {
+        .auth-header {
+            padding: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .auth-card h2 {
+            font-size: 2rem;
+        }
+
+        .auth-subtitle {
+            font-size: 1rem;
+            max-width: 90%;
+        }
+
+        .role-icon-wrapper {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1.5rem;
+        }
+
+        .role-icon {
+            font-size: 3rem;
+        }
+    }
+
+    .text-danger {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        font-weight: 500;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        background-color: rgba(220, 53, 69, 0.1);
+        display: inline-block;
+    }
+</style>
+
+<div class="auth-container">
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="role-icon-wrapper">
+                    {% if role == 'farmer' %}
+                    <i class="fas fa-tractor role-icon"></i>
+                    {% elif role == 'investor' %}
+                    <i class="fas fa-chart-line role-icon"></i>
+                    {% else %}
+                    <i class="fas fa-user-shield role-icon"></i>
+                    {% endif %}
+                </div>
+                <h2>Welcome Back!</h2>
+                <p class="auth-subtitle">Sign in to continue to Agriverse</p>
+            </div>
+            
+            <div class="form-container">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="input-group">
+                        <label for="email" class="form-label">Email Address</label>
+                        {{ form.email(class="form-control", placeholder="Enter your email") }}
+                        {% for error in form.email.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="password" class="form-label">Password</label>
+                        {{ form.password(class="form-control", placeholder="Enter your password") }}
+                        {% for error in form.password.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="form-check">
+                        {{ form.remember(class="form-check-input") }}
+                        <label class="form-check-label" for="remember">Remember me</label>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-auth">
+                        <i class="fas fa-sign-in-alt"></i>Login
+                    </button>
+                </form>
+            </div>
+            
+            <div class="auth-footer">
+                <p class="mb-0">Don't have an account? 
+                    <a href="{{ url_for('auth.signup', role=role) }}">Sign up here</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
